@@ -67,6 +67,30 @@ def html_to_factors_21cent(url):
         except:
             return None
 
+
+def html_to_factors_infowars(url):
+    """
+    Given a url from InfoWars , this function returns a dictionary which contains the name of the author, 
+    number of links on the website, the headline and the body.
+    """
+    import requests
+    from bs4 import BeautifulSoup
+    
+    response = requests.get(url)
+    if response.status_code == 200:
+        try:
+            page_data_soup = BeautifulSoup(response.content,'lxml')
+            author_name = page_data_soup.find('span', class_="author").find('a').text
+            links = [link.get('href') for link in page_data_soup.find_all('a', href=True)]
+            headline = page_data_soup.find('h1', class_="entry-title").text
+            body = ''
+            for tag in page_data_soup.find('article').find_all('p'):
+                body += " "*(len(body)!=0) + tag.text
+            dict_solution = {'author_name':author_name, "links":links, "headline":headline,"body":body}
+            return dict_solution
+        except:
+            return None
+
 def scrap_RNRN_web():
     """
     This function takes down all the web urls from RNRN
@@ -112,3 +136,26 @@ def scrap_21_cent_web():
                 new_page_data_soup = BeautifulSoup(newresponse.content,'lxml')
                 cent21_url.extend([item.find('a').get('href') for item in new_page_data_soup.find_all('h2', class_="entry-title")])
     return cent21_url
+
+def scrap_infowars_web():
+    """
+    This function takes down all the web urls from InfoWars
+    and return them as a list
+    """
+    url = "http://www.infowars.com/"
+    import requests
+    from bs4 import BeautifulSoup
+
+    infowars_url = []
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        page_data_soup = BeautifulSoup(response.content,'lxml')
+        for tag in page_data_soup.find('li', id="menu-item-216953").find_all('li'):
+            category_link = tag.find('a').get('href')
+            newresponse = requests.get(category_link)
+            if newresponse.status_code == 200:
+                new_page_data_soup = BeautifulSoup(newresponse.content,'lxml')
+                infowars_url.extend([div.find('h3').find('a').get('href') for div in new_page_data_soup.find_all('div', class_="article pure-u-xs-1-1 pure-u-sm-1-2 pure-u-lg-1-2 pure-u-xl-1-2 ")])
+                    
+    return infowars_url
