@@ -1,3 +1,3 @@
 # Fakathon
 
-THis is the repository of Fakathon
+This is the repository of Fakathon and we classify fake news!
